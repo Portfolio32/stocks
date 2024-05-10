@@ -18,7 +18,6 @@ with open("data.csv") as file:
     next(file)
     file = file
     reader = csv.reader(file)
-    costs = []
     for line in reader:
         # date is index 0, volume is index 2, open is index 3
         time = dt.strptime(line[0], '%m/%d/%Y').timetuple().tm_yday
@@ -27,7 +26,6 @@ with open("data.csv") as file:
         if d.get(time) == None:
             d[time] = d.get(time, [])
         d.get(time).append(volume)
-        costs.append(line[3])
 # I want to train my model after the 1500th sets cause at those dates tesla stockhave a pattern
 d = list(sorted(d.items()))
 T = torch.zeros((1,366), dtype=torch.int32)
@@ -41,13 +39,21 @@ for volumes in d:
 
 # I can simply assume that if the volumes increase, the price probably decreases
 # I can simply assume that if the volume decreases, the price probably increases
-# so volumes should be the x value, cause the slope is the rate of change
+predication_day = int(input("Enter number corresponding to date [1-366]: "))
+volumes, dates = slope(predication_day, T)
+volumes = [int(volume) for volume in volumes]
+xs = sum(volume for volume in volumes)
+ys = sum(dates)
+xys = sum([x*y for x,y in zip(volumes, dates)])
+xxs = sum(x**2 for x in volumes)
 
-volumes, dates = slope(366, T)
+m = (xys - (xs*ys)/50)/(xxs - xxs/50)
 
-xs = sum(volume.data for volume in volumes)/50
-ys = sum(dates)/50
-xys = 
-
+if m > 0:
+    print("Price will decrease")
+elif m < 0:
+    print("Price will increase")
+else:
+    print("nohting will change")
 
 
